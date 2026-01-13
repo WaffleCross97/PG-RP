@@ -1,0 +1,34 @@
+name: Build 1.21.11 Resource Pack
+
+on:
+  push:
+    branches: [ main ] # This runs the robot every time you upload changes
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Pack Zip
+        run: |
+          # This zips your folders into the format Minecraft 1.21.11 requires
+          zip -r pack.zip assets/ pack.mcmeta pack.png
+
+      - name: Generate 1.21.11 Hash
+        id: hash
+        run: |
+          SHA=$(sha1sum pack.zip | awk '{ print $1 }')
+          echo $SHA > hash.txt
+          echo "pack_sha=$SHA" >> $GITHUB_OUTPUT
+
+      - name: Push to Repo
+        run: |
+          git config --global user.name "PackBot"
+          git config --global user.email "bot@github.com"
+          git add pack.zip hash.txt
+          git commit -m "Update 1.21.11 Pack: ${{ steps.hash.outputs.pack_sha }}"
+          git push
