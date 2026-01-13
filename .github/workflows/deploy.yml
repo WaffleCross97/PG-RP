@@ -1,4 +1,4 @@
-name: Build 1.21.11 Resource Pack
+name: Build Java and Bedrock Packs
 
 on:
   push:
@@ -10,29 +10,25 @@ jobs:
     permissions:
       contents: write
     steps:
-      # 1. This downloads your files from GitHub so the robot can see them
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. This creates the zip using the folder with the space
-      - name: Create Pack Zip
-        run: |
-          # We use "./Waffle Music" with quotes to handle the space
-          zip -r ../pack.zip assets/ pack.mcmeta pack.png
-        working-directory: "./Waffle Music"
+      # 1. Create the Java Zip from the Disc folder
+      - name: Create Java Zip
+        run: zip -r ../pack.zip assets/ pack.mcmeta pack.png
+        working-directory: ./Waffle_Music_Disc
 
-      # 3. This moves back to the main folder to finish the job
-      - name: Generate 1.21.11 Hash
-        id: hash
-        run: |
-          SHA=$(sha1sum pack.zip | awk '{ print $1 }')
-          echo $SHA > hash.txt
-          echo "pack_sha=$SHA" >> $GITHUB_OUTPUT
+      # 2. Create the Bedrock .mcpack from the Bedrock folder
+      - name: Create Bedrock Pack
+        run: zip -r ../bedrock-pack.mcpack manifest.json pack_icon.png textures/ sounds/ texts/
+        working-directory: ./Waffle_Music_Disc_Bedrock
 
+      # 3. Generate Hash and Push both to GitHub
       - name: Push to Repo
         run: |
+          sha1sum pack.zip | awk '{ print $1 }' > hash.txt
           git config --global user.name "PackBot"
           git config --global user.email "bot@github.com"
-          git add pack.zip hash.txt
-          git commit -m "Update 1.21.11 Pack: ${{ steps.hash.outputs.pack_sha }}"
+          git add pack.zip bedrock-pack.mcpack hash.txt
+          git commit -m "Update Java & Bedrock: $(date)"
           git push
