@@ -11,21 +11,22 @@ jobs:
       contents: write
     defaults:
       run:
-        # This tells the robot to work inside your Waffle Music folder
-        working-directory: ./Waffle Music
+        # Added quotes here to handle the space in the name
+        working-directory: './Waffle Music'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Create Pack Zip
         run: |
-          # The robot is now inside Waffle Music, so it can see these files
+          # Zips your files from inside the 'Waffle Music' folder
           zip -r ../pack.zip assets/ pack.mcmeta pack.png
 
       - name: Generate 1.21.11 Hash
         id: hash
-        working-directory: . # Move back to root to save the hash and zip
+        working-directory: . 
         run: |
+          # Moves back to the main folder to save the zip and hash
           SHA=$(sha1sum pack.zip | awk '{ print $1 }')
           echo $SHA > hash.txt
           echo "pack_sha=$SHA" >> $GITHUB_OUTPUT
