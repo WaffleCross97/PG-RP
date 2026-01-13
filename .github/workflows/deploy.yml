@@ -9,30 +9,27 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    defaults:
-      run:
-        # Added quotes here to handle the space in the name
-        working-directory: './Waffle Music'
     steps:
+      # 1. This downloads your files from GitHub so the robot can see them
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. This creates the zip using the folder with the space
       - name: Create Pack Zip
         run: |
-          # Zips your files from inside the 'Waffle Music' folder
+          # We use "./Waffle Music" with quotes to handle the space
           zip -r ../pack.zip assets/ pack.mcmeta pack.png
+        working-directory: "./Waffle Music"
 
+      # 3. This moves back to the main folder to finish the job
       - name: Generate 1.21.11 Hash
         id: hash
-        working-directory: . 
         run: |
-          # Moves back to the main folder to save the zip and hash
           SHA=$(sha1sum pack.zip | awk '{ print $1 }')
           echo $SHA > hash.txt
           echo "pack_sha=$SHA" >> $GITHUB_OUTPUT
 
       - name: Push to Repo
-        working-directory: .
         run: |
           git config --global user.name "PackBot"
           git config --global user.email "bot@github.com"
