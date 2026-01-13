@@ -13,14 +13,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. Create the Java Zip from the Disc folder
+      # 1. Create the Java Zip
       - name: Create Java Zip
         run: zip -r ../pack.zip assets/ pack.mcmeta pack.png
         working-directory: ./Waffle_Music_Disc
 
-      # 2. Create the Bedrock .mcpack from the Bedrock folder
+      # 2. Create the Bedrock .mcpack (This is just a zip with the .mcpack extension)
       - name: Create Bedrock Pack
-        run: zip -r ../bedrock-pack.mcpack manifest.json pack_icon.png textures/ sounds/ texts/
+        run: zip -r ../Waffle_Music.mcpack manifest.json pack_icon.png textures/ sounds/ texts/
         working-directory: ./Waffle_Music_Disc_Bedrock
 
       # 3. Generate Hash and Push both to GitHub
@@ -29,6 +29,7 @@ jobs:
           sha1sum pack.zip | awk '{ print $1 }' > hash.txt
           git config --global user.name "PackBot"
           git config --global user.email "bot@github.com"
-          git add pack.zip bedrock-pack.mcpack hash.txt
-          git commit -m "Update Java & Bedrock: $(date)"
+          # Adding the .mcpack file specifically
+          git add pack.zip Waffle_Music.mcpack hash.txt
+          git commit -m "Update Java & Bedrock .mcpack: $(date)"
           git push
