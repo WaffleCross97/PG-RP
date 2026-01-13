@@ -2,30 +2,36 @@ name: Build 1.21.11 Resource Pack
 
 on:
   push:
-    branches: [ main ] # This runs the robot every time you upload changes
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    defaults:
+      run:
+        # This tells the robot to work inside your Waffle Music folder
+        working-directory: ./Waffle Music
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Create Pack Zip
         run: |
-          # This zips your folders into the format Minecraft 1.21.11 requires
-          zip -r pack.zip assets/ pack.mcmeta pack.png
+          # The robot is now inside Waffle Music, so it can see these files
+          zip -r ../pack.zip assets/ pack.mcmeta pack.png
 
       - name: Generate 1.21.11 Hash
         id: hash
+        working-directory: . # Move back to root to save the hash and zip
         run: |
           SHA=$(sha1sum pack.zip | awk '{ print $1 }')
           echo $SHA > hash.txt
           echo "pack_sha=$SHA" >> $GITHUB_OUTPUT
 
       - name: Push to Repo
+        working-directory: .
         run: |
           git config --global user.name "PackBot"
           git config --global user.email "bot@github.com"
