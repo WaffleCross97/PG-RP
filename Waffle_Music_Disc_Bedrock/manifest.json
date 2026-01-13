@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Waffle Music Discs",
+    "description": "Redoes Music Discs to Custom ones",
+    "uuid": "67c9e314-cf03-446d-a79b-50bb33e9c296",
+    "version": [
+      1,
+      0,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "b1682115-aa98-456a-a1fa-473a766bef2b",
+      "version": [
+        1,
+        0,
+        1
+      ]
+    }
+  ]
+}

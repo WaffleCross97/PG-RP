@@ -1,17 +1,20 @@
 @echo off
-title PG-RP 1.21.11 Uploader
-echo 📦 Sending textures to WaffleCross97/PG-RP...
+title PG-RP Multi-Pack Uploader
+echo 📦 Preparing Java and Bedrock updates...
 
-:: Stage everything
+:: 1. Check for changes in both folders
 git add .
 
-:: Commit with a timestamp
-git commit -m "Pack Update: %date% %time%"
+:: 2. Create a timestamped commit
+set commit_msg="Pack Update: %date% %time%"
+git commit -m %commit_msg%
 
-:: Push to the main branch
-echo 🚀 Uploading to GitHub...
-git push -u origin main
+:: 3. Push to GitHub
+echo 🚀 Uploading Waffle_Music_Disc & Bedrock to GitHub...
+git push origin main
 
 echo.
-echo ✅ Done! Check your GitHub Actions tab.
+echo ✅ Done! 
+echo ⏳ Wait 30 seconds for the GitHub Robot to build the .mcpack
+echo 🚀 Then run your server's start.bat
 pause
