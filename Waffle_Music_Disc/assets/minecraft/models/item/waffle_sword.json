@@ -4,8 +4,8 @@
 	"parent": "item/generated",
 	"texture_size": [32, 32],
 	"textures": {
-		"0": "block/waffle_sword",
-		"particle": "block/waffle_sword"
+		"0": "item/waffle_sword",
+		"particle": "item/waffle_sword"
 	},
 	"elements": [
 		{
