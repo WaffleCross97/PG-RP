@@ -8,10 +8,10 @@
       "component": "minecraft:custom_name",
       "cases": [
         {
-          "when": "Traptanium Shield",
+          "when": "Waffle Shield",
           "model": {
             "type": "minecraft:model",
-            "model": "minecraft:item/traptanium_shield_blocking"
+            "model": "minecraft:item/waffle_shield_blocking"
           }
         }
       ],
@@ -26,10 +26,10 @@
       "component": "minecraft:custom_name",
       "cases": [
         {
-          "when": "Traptanium Shield",
+          "when": "Waffle Shield",
           "model": {
             "type": "minecraft:model",
-            "model": "minecraft:item/traptanium_shield"
+            "model": "minecraft:item/waffle_shield"
           }
         }
       ],

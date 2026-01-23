@@ -19,3 +19,4 @@ git push origin main
 echo.
 echo ✅ Done! Wait 30 seconds for the robot to finish, then start your server.
 pause
+exit
