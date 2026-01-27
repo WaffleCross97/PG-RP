@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Model Import Builder</title>
+</head>
+<body>
+  <h1>Model Import Builder</h1>
+
+  <label>Model ID (e.g. waffle_shield):
+    <input id="model-id" type="text" />
+  </label>
+  <br /><br />
+
+  <label>Model JSON:
+    <input id="model-json" type="file" accept=".json" />
+  </label>
+  <br /><br />
+
+  <label>Texture PNG:
+    <input id="texture-png" type="file" accept=".png" />
+  </label>
+  <br /><br />
+
+  <button id="build-zip">Download pack.zip</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
