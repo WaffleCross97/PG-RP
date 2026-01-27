@@ -299,34 +299,24 @@
         
         <div class="form-container">
             <form id="modelForm">
-                <!-- Step 1: Custom Model Name -->
-                <div class="form-group">
-                    <label class="form-label">Custom Model Name:</label>
-                    <input type="text" 
-                           class="form-input" 
-                           id="modelName"
-                           placeholder="waffle_shield, crown, custom_sword"
-                           required>
-                    <small style="color: #a0a0a0; display: block; margin-top: 0.5rem;">
-                        This creates: <code id="modelPreview">models/item/{name}.json</code>
-                    </small>
-                </div>
-                
-                <!-- Step 2: Item Name (for ModelApplier) -->
+                <!-- ONLY ONE FIELD NEEDED: Item Name -->
                 <div class="form-group">
                     <label class="form-label">Item Name (for ModelApplier):</label>
                     <input type="text" 
                            class="form-input" 
                            id="itemName"
-                           placeholder="coin, diamond_sword, shield"
+                           placeholder="coin, crown, shield, sword"
                            required>
                     <small style="color: #a0a0a0; display: block; margin-top: 0.5rem;">
-                        This creates: <code id="itemPreview">items/{item_name}.json</code>
+                        This creates all files with the same name:<br>
+                        • <code>items/{name}.json</code> (ModelApplier definition)<br>
+                        • <code>models/item/{name}.json</code> (your 3D model)<br>
+                        • <code>textures/item/{name}.png</code> (your texture)<br>
                         <br>In-game: rename items to "<span id="itemRenamePreview">item_name</span>"
                     </small>
                 </div>
                 
-                <!-- Step 3: Drag & Drop for JSON -->
+                <!-- Drag & Drop for JSON -->
                 <div class="form-group">
                     <label class="form-label">Model JSON File:</label>
                     <div class="file-upload" id="jsonDropZone">
@@ -340,7 +330,7 @@
                     <input type="file" id="jsonFile" accept=".json" hidden>
                 </div>
                 
-                <!-- Step 4: Drag & Drop for PNG -->
+                <!-- Drag & Drop for PNG -->
                 <div class="form-group">
                     <label class="form-label">Texture PNG File:</label>
                     <div class="file-upload" id="pngDropZone">
@@ -361,12 +351,12 @@
 {<br>
 &nbsp;&nbsp;"model": {<br>
 &nbsp;&nbsp;&nbsp;&nbsp;"type": "minecraft:model",<br>
-&nbsp;&nbsp;&nbsp;&nbsp;"model": "minecraft:item/<span id="previewModelName">model_name</span>"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"model": "minecraft:item/<span id="previewModelName">item_name</span>"<br>
 &nbsp;&nbsp;}<br>
 }
                     </div>
                     <p style="margin-top: 10px; color: #a0a0a0; font-size: 0.9rem;">
-                        This goes in: <code>assets/minecraft/items/<span id="previewItemFileName">item_name</span>.json</code>
+                        All files will use the same name: <code><span id="previewItemFileName">item_name</span></code>
                     </p>
                 </div>
                 
@@ -386,23 +376,23 @@
         </div>
         
         <div class="instructions">
-            <h3>How ModelApplier Works:</h3>
+            <h3>How ModelApplier Works (Simplified):</h3>
             <ul>
-                <li><strong>Custom Model Name:</strong> Your 3D model file name (goes in <code>models/item/</code>)</li>
-                <li><strong>Item Name:</strong> What users rename items to in-game (goes in <code>items/</code>)</li>
-                <li><strong>Three files are created:</strong>
+                <li><strong>Item Name:</strong> The <em>only</em> name you need to provide</li>
+                <li><strong>Three files are created with the SAME name:</strong>
                     <ol>
                         <li><code>items/{item_name}.json</code> ← Tells ModelApplier what model to use</li>
-                        <li><code>models/item/{model_name}.json</code> ← Your 3D model</li>
-                        <li><code>textures/item/{model_name}.png</code> ← Your texture</li>
+                        <li><code>models/item/{item_name}.json</code> ← Your 3D model</li>
+                        <li><code>textures/item/{item_name}.png</code> ← Your texture</li>
                     </ol>
                 </li>
                 <li><strong>In-game usage:</strong>
                     <ol>
-                        <li>Rename any item to your "Item Name"</li>
+                        <li>Rename any item to your <strong>Item Name</strong></li>
                         <li>ModelApplier looks for <code>items/{item_name}.json</code></li>
-                        <li>Finds <code>"model": "minecraft:item/{model_name}"</code></li>
-                        <li>Uses your custom model from <code>models/item/{model_name}.json</code></li>
+                        <li>Finds <code>"model": "minecraft:item/{item_name}"</code></li>
+                        <li>Uses <code>models/item/{item_name}.json</code> (your 3D model)</li>
+                        <li>Uses <code>textures/item/{item_name}.png</code> (your texture)</li>
                     </ol>
                 </li>
             </ul>
@@ -414,10 +404,14 @@
                 │   ├── items/<br>
                 │   │   └── <span id="structItem">item_name</span>.json<br>
                 │   ├── models/item/<br>
-                │   │   └── <span id="structModel">model_name</span>.json<br>
+                │   │   └── <span id="structModel">item_name</span>.json<br>
                 │   └── textures/item/<br>
-                │       └── <span id="structTexture">model_name</span>.png
+                │       └── <span id="structTexture">item_name</span>.png
             </div>
+            
+            <p style="margin-top: 15px; color: #a0a0a0; font-size: 0.9rem;">
+                <strong>Note:</strong> All three files use the same name. This is simpler and works perfectly with ModelApplier!
+            </p>
         </div>
     </div>
 
@@ -428,34 +422,26 @@
         const jsonFileInput = document.getElementById('jsonFile');
         const pngFileInput = document.getElementById('pngFile');
         const submitBtn = document.getElementById('submitBtn');
+        const itemNameInput = document.getElementById('itemName');
         
-        // Update previews as user types
-        document.getElementById('modelName').addEventListener('input', function(e) {
-            const modelName = e.target.value.trim().toLowerCase() || 'model_name';
-            document.getElementById('modelPreview').textContent = `models/item/${modelName}.json`;
-            document.getElementById('previewModelName').textContent = modelName;
-            document.getElementById('structModel').textContent = modelName;
-            document.getElementById('structTexture').textContent = modelName;
-            
-            // Show/hide JSON preview
-            const itemName = document.getElementById('itemName').value.trim();
-            if (modelName && itemName) {
-                document.getElementById('jsonPreview').style.display = 'block';
-            }
-        });
-        
-        document.getElementById('itemName').addEventListener('input', function(e) {
+        // Update previews as user types Item Name
+        itemNameInput.addEventListener('input', function(e) {
             const itemName = e.target.value.trim().toLowerCase() || 'item_name';
-            document.getElementById('itemPreview').textContent = `items/${itemName}.json`;
+            
+            // Update all previews with the same name
             document.getElementById('itemRenamePreview').textContent = itemName;
+            document.getElementById('previewModelName').textContent = itemName;
             document.getElementById('previewItemFileName').textContent = itemName;
             document.getElementById('structItem').textContent = itemName;
+            document.getElementById('structModel').textContent = itemName;
+            document.getElementById('structTexture').textContent = itemName;
             
             // Show/hide JSON preview
-            const modelName = document.getElementById('modelName').value.trim();
-            if (modelName && itemName) {
+            if (itemName) {
                 document.getElementById('jsonPreview').style.display = 'block';
             }
+            
+            checkFormCompletion();
         });
         
         // ========== DRAG & DROP FUNCTIONALITY ==========
@@ -548,14 +534,22 @@
             document.getElementById('jsonFileName').textContent = file.name;
             jsonFileInput.files = createFileList(file);
             
-            // Auto-fill model name from filename if empty
-            if (!document.getElementById('modelName').value && file.name) {
+            // Auto-fill item name from filename if empty
+            if (!itemNameInput.value && file.name) {
                 const nameWithoutExt = file.name.replace('.json', '').toLowerCase();
-                document.getElementById('modelName').value = nameWithoutExt;
-                document.getElementById('modelPreview').textContent = `models/item/${nameWithoutExt}.json`;
+                itemNameInput.value = nameWithoutExt;
+                
+                // Update all previews
+                document.getElementById('itemRenamePreview').textContent = nameWithoutExt;
                 document.getElementById('previewModelName').textContent = nameWithoutExt;
+                document.getElementById('previewItemFileName').textContent = nameWithoutExt;
+                document.getElementById('structItem').textContent = nameWithoutExt;
                 document.getElementById('structModel').textContent = nameWithoutExt;
                 document.getElementById('structTexture').textContent = nameWithoutExt;
+                
+                if (nameWithoutExt) {
+                    document.getElementById('jsonPreview').style.display = 'block';
+                }
             }
             
             // Preview JSON content
@@ -603,17 +597,15 @@
         
         // Check if form is complete
         function checkFormCompletion() {
-            const modelName = document.getElementById('modelName').value.trim();
-            const itemName = document.getElementById('itemName').value.trim();
+            const itemName = itemNameInput.value.trim();
             const hasJson = jsonFileInput.files.length > 0;
             const hasPng = pngFileInput.files.length > 0;
             
-            submitBtn.disabled = !(modelName && itemName && hasJson && hasPng);
+            submitBtn.disabled = !(itemName && hasJson && hasPng);
         }
         
         // Check form on input
-        document.getElementById('modelName').addEventListener('input', checkFormCompletion);
-        document.getElementById('itemName').addEventListener('input', checkFormCompletion);
+        itemNameInput.addEventListener('input', checkFormCompletion);
         
         // ========== FORM SUBMISSION ==========
         
@@ -622,19 +614,13 @@
             e.preventDefault();
             
             // Get form values
-            const modelName = document.getElementById('modelName').value.trim().toLowerCase();
-            const itemName = document.getElementById('itemName').value.trim().toLowerCase();
+            const itemName = itemNameInput.value.trim().toLowerCase();
             const jsonFile = jsonFileInput.files[0];
             const pngFile = pngFileInput.files[0];
             
             // Validation
-            if (!modelName || !itemName) {
-                alert('Please enter both Model Name and Item Name.');
-                return;
-            }
-            
-            if (!/^[a-z0-9_]+$/.test(modelName)) {
-                alert('Model Name can only contain lowercase letters, numbers, and underscores.');
+            if (!itemName) {
+                alert('Please enter an Item Name.');
                 return;
             }
             
@@ -678,7 +664,7 @@
                 const itemJson = {
                     "model": {
                         "type": "minecraft:model",
-                        "model": `minecraft:item/${modelName}`
+                        "model": `minecraft:item/${itemName}`
                     }
                 };
                 
@@ -692,20 +678,20 @@
                 
                 // 2. Upload MODEL JSON (custom 3D model)
                 document.getElementById('loadingText').textContent = 'Uploading model JSON...';
-                const modelPath = `Waffle_Music_Disc/assets/minecraft/models/item/${modelName}.json`;
+                const modelPath = `Waffle_Music_Disc/assets/minecraft/models/item/${itemName}.json`;
                 
                 // Validate/clean the model JSON
                 let modelJson;
                 try {
                     modelJson = JSON.parse(jsonText);
                     
-                    // FIX: Update texture references to ALWAYS use "item/{modelName}"
+                    // FIX: Update texture references to ALWAYS use "item/{itemName}"
                     if (modelJson.textures) {
                         for (const key in modelJson.textures) {
                             const currentTexture = modelJson.textures[key];
                             if (typeof currentTexture === 'string') {
-                                // Always set to "item/{modelName}" - this fixes the issue!
-                                modelJson.textures[key] = `item/${modelName}`;
+                                // Always set to "item/{itemName}" - this fixes the issue!
+                                modelJson.textures[key] = `item/${itemName}`;
                             }
                         }
                     }
@@ -715,7 +701,7 @@
                         modelJson = {
                             "parent": "item/generated",
                             "textures": {
-                                "layer0": `item/${modelName}`
+                                "layer0": `item/${itemName}`
                             }
                         };
                     }
@@ -723,14 +709,14 @@
                     modelJson = {
                         "parent": "item/generated",
                         "textures": {
-                            "layer0": `item/${modelName}`
+                            "layer0": `item/${itemName}`
                         }
                     };
                 }
                 
                 const modelResult = await uploadToGitHub(githubToken, modelPath, 
                     JSON.stringify(modelJson, null, 2), 
-                    `Add 3D model: ${modelName}.json`);
+                    `Add 3D model: ${itemName}.json`);
                 
                 if (!modelResult.success) {
                     throw new Error(`Failed to upload model JSON: ${modelResult.message}`);
@@ -738,9 +724,9 @@
                 
                 // 3. Upload TEXTURE PNG
                 document.getElementById('loadingText').textContent = 'Uploading texture PNG...';
-                const texturePath = `Waffle_Music_Disc/assets/minecraft/textures/item/${modelName}.png`;
+                const texturePath = `Waffle_Music_Disc/assets/minecraft/textures/item/${itemName}.png`;
                 const textureResult = await uploadToGitHub(githubToken, texturePath, 
-                    pngBase64, `Add texture: ${modelName}.png`, true);
+                    pngBase64, `Add texture: ${itemName}.png`, true);
                 
                 if (!textureResult.success) {
                     throw new Error(`Failed to upload texture: ${textureResult.message}`);
@@ -753,18 +739,18 @@
                     <div class="success-box">
                         <h3 style="color: #2ecc71; margin-bottom: 1rem;">✅ All Files Uploaded Successfully!</h3>
                         
-                        <p><strong>Files added to your repository:</strong></p>
+                        <p><strong>Files added to your repository (all named <code>${itemName}</code>):</strong></p>
                         <div class="file-structure">
                             1. <strong>items/${itemName}.json</strong> (for ModelApplier):<br>
                             {<br>
                             &nbsp;&nbsp;"model": {<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;"type": "minecraft:model",<br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;"model": "minecraft:item/${modelName}"<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"model": "minecraft:item/${itemName}"<br>
                             &nbsp;&nbsp;}<br>
                             }<br><br>
-                            2. <strong>models/item/${modelName}.json</strong> (your 3D model)<br>
-                            &nbsp;&nbsp;<em>Texture will be: <code>"item/${modelName}"</code></em><br>
-                            3. <strong>textures/item/${modelName}.png</strong> (your texture)
+                            2. <strong>models/item/${itemName}.json</strong> (your 3D model)<br>
+                            &nbsp;&nbsp;<em>Texture: <code>"item/${itemName}"</code></em><br>
+                            3. <strong>textures/item/${itemName}.png</strong> (your texture)
                         </div>
                         
                         <p style="margin-top: 15px;"><strong>In-game usage with ModelApplier:</strong></p>
@@ -772,7 +758,7 @@
                             <li>Rename ANY item to: <code style="color: #4cc9f0; font-weight: bold;">${itemName}</code></li>
                             <li>Hold the renamed item</li>
                             <li>Press G → ModelApplier → "Apply Item Model"</li>
-                            <li>Item will show as: <code>${modelName}</code> model</li>
+                            <li>Item will show as your custom model!</li>
                         </ol>
                         
                         <p><strong>What happens next:</strong></p>
@@ -800,9 +786,12 @@
                 document.getElementById('pngFileName').textContent = 'No file chosen';
                 document.getElementById('jsonPreview').innerHTML = '';
                 document.getElementById('pngPreview').innerHTML = '';
-                document.getElementById('modelPreview').textContent = 'models/item/{name}.json';
-                document.getElementById('itemPreview').textContent = 'items/{item_name}.json';
                 document.getElementById('itemRenamePreview').textContent = 'item_name';
+                document.getElementById('previewModelName').textContent = 'item_name';
+                document.getElementById('previewItemFileName').textContent = 'item_name';
+                document.getElementById('structItem').textContent = 'item_name';
+                document.getElementById('structModel').textContent = 'item_name';
+                document.getElementById('structTexture').textContent = 'item_name';
                 
             } catch (error) {
                 document.getElementById('loading').style.display = 'none';
