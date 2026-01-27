@@ -1,0 +1,173 @@
+@echo off
+title PG-RP Repository Uploader
+color 0A
+echo ========================================
+echo    PG-RP GitHub Upload Tool
+echo ========================================
+
+:: Set repository path
+set "REPO_PATH=C:\Users\tidus\OneDrive\Desktop\Minecraft rp\"
+cd /d "%REPO_PATH%" 2>nul || (
+    echo ERROR: Cannot find repository at:
+    echo   %REPO_PATH%
+    echo.
+    echo Please make sure you cloned the repository first.
+    echo Run: git clone https://github.com/WaffleCross97/PG-RP.git
+    pause
+    exit /b 1
+)
+
+:: Check if Git is initialized
+if not exist ".git" (
+    echo ERROR: Not a Git repository!
+    echo.
+    echo Run these commands first:
+    echo   cd "%REPO_PATH%"
+    echo   git init
+    echo   git remote add origin https://github.com/WaffleCross97/PG-RP.git
+    echo   git pull origin main --allow-unrelated-histories
+    pause
+    exit /b 1
+)
+
+:: Step 1: Check current status
+echo.
+echo [1/5] Checking repository status...
+git status
+
+:: Ask user what they want to upload
+echo.
+echo ========================================
+echo    WHAT DO YOU WANT TO UPLOAD?
+echo ========================================
+echo 1. Everything (all changes)
+echo 2. Only new models/textures
+echo 3. Only pack files (pack.zip, .mcpack, hash.txt)
+echo 4. Custom selection
+echo.
+set /p CHOICE="Enter choice (1-4): "
+
+:: Step 2: Stage files based on choice
+echo.
+echo [2/5] Staging files...
+goto choice_%CHOICE%
+
+:choice_1
+    echo Staging ALL changes...
+    git add -A
+    goto after_stage
+
+:choice_2
+    echo Staging only model files...
+    git add "Waffle_Music_Disc/assets/minecraft/items/*.json"
+    git add "Waffle_Music_Disc/assets/minecraft/models/item/*.json" 
+    git add "Waffle_Music_Disc/assets/minecraft/textures/item/*.png"
+    goto after_stage
+
+:choice_3
+    echo Staging only pack files...
+    git add "pack.zip" 2>nul
+    git add "Waffle_Music.mcpack" 2>nul
+    git add "hash.txt" 2>nul
+    goto after_stage
+
+:choice_4
+    echo.
+    echo Available files/folders:
+    echo -------------------------
+    git status --porcelain
+    echo.
+    set /p FILES="Enter files/folders to stage (e.g., *.json or folder/): "
+    if "%FILES%"=="" (
+        echo No files specified. Staging everything.
+        git add -A
+    ) else (
+        git add %FILES%
+    )
+    goto after_stage
+
+:after_stage
+:: Check if anything was staged
+git diff --cached --quiet
+if errorlevel 1 (
+    echo ✓ Files staged successfully!
+) else (
+    echo No changes to upload!
+    goto :nothing_to_commit
+)
+
+:: Step 3: Show what will be uploaded
+echo.
+echo [3/5] Files to be uploaded:
+echo ---------------------------
+git diff --cached --name-only
+
+:: Step 4: Create commit
+echo.
+echo [4/5] Creating commit...
+for /f "tokens=1-3 delims=/ " %%a in ('date /t') do set DD=%%a
+for /f "tokens=2 delims=/ " %%a in ('date /t') do set MM=%%a  
+for /f "tokens=3 delims=/ " %%a in ('date /t') do set YYYY=%%a
+for /f "tokens=1-2 delims=: " %%a in ('time /t') do set TIME=%%a:%%b
+
+set "COMMIT_MSG=Update: %YYYY%-%MM%-%DD% %TIME%"
+echo Commit message: %COMMIT_MSG%
+git commit -m "%COMMIT_MSG%"
+
+if errorlevel 1 (
+    echo ERROR: Commit failed!
+    echo This usually means no changes were staged.
+    pause
+    exit /b 1
+)
+
+:: Step 5: Push to GitHub
+echo.
+echo [5/5] Pushing to GitHub...
+echo.
+git push origin main
+
+if errorlevel 1 (
+    echo.
+    echo ERROR: Push failed!
+    echo Possible reasons:
+    echo - No internet connection
+    echo - Need to pull changes first (run git pull)
+    echo - GitHub authentication required
+    echo.
+    echo Try: git pull origin main --rebase
+    echo Then run this script again.
+    pause
+    exit /b 1
+)
+
+:: Success!
+echo.
+echo ========================================
+echo    ✓ UPLOAD SUCCESSFUL!
+echo ========================================
+echo.
+echo What happens next:
+echo 1. GitHub Actions will auto-run
+echo 2. New pack.zip will be generated
+echo 3. Check status: https://github.com/WaffleCross97/PG-RP/actions
+echo.
+echo Run sync_pack.py on your server to download new pack.
+echo.
+goto :end
+
+:nothing_to_commit
+echo.
+echo No changes detected in selected files.
+echo.
+echo Check if:
+echo 1. Files are in the right folder
+echo 2. Files have been modified
+echo 3. You selected the correct option
+echo.
+goto :end
+
+:end
+echo Press any key to close...
+pause > nul
+exit /b 0
