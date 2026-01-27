@@ -1,30 +1,335 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Model Import Builder</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Import Builder | PG-RP</title>
+    <style>
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 1.1rem;
+        }
+        
+        /* Main Form */
+        .form-container {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .form-group {
+            margin-bottom: 2rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: #fff;
+            font-size: 1.1rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        /* File Upload Areas */
+        .file-upload {
+            position: relative;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 3rem 2rem;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload:hover {
+            border-color: #4361ee;
+            background: rgba(67, 97, 238, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #4361ee;
+        }
+        
+        .upload-text {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-subtext {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+        
+        .file-name {
+            margin-top: 1rem;
+            color: #4cc9f0;
+            font-weight: 500;
+        }
+        
+        /* Button */
+        .submit-btn {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            color: white;
+            border: none;
+            padding: 1.2rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Status/Download Area */
+        .download-area {
+            margin-top: 2rem;
+            text-align: center;
+            padding: 2rem;
+            background: rgba(76, 201, 240, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(76, 201, 240, 0.3);
+            display: none;
+        }
+        
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #4cc9f0;
+            color: #1a1a2e;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            background: #3ab8df;
+            transform: translateY(-2px);
+        }
+        
+        /* Instructions */
+        .instructions {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid #4361ee;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+        
+        .instructions ul {
+            padding-left: 1.5rem;
+            color: #a0a0a0;
+        }
+        
+        .instructions li {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .form-container {
+                padding: 1.5rem;
+            }
+            
+            .header {
+                padding: 1.5rem;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>Model Import Builder</h1>
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">Model Import Builder</h1>
+            <p class="subtitle">Convert your 3D models for PG-RP</p>
+        </div>
+        
+        <div class="form-container">
+            <form id="modelForm">
+                <div class="form-group">
+                    <label class="form-label">Model ID (e.g. waffle_shield):</label>
+                    <input type="text" 
+                           class="form-input" 
+                           placeholder="Enter a unique model identifier"
+                           required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Model JSON:</label>
+                    <div class="file-upload" onclick="document.getElementById('jsonFile').click()">
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-text">Click to upload JSON file</div>
+                        <div class="upload-subtext">.json format only</div>
+                        <div class="file-name" id="jsonFileName">No file chosen</div>
+                    </div>
+                    <input type="file" id="jsonFile" accept=".json" hidden>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Texture PNG:</label>
+                    <div class="file-upload" onclick="document.getElementById('pngFile').click()">
+                        <div class="upload-icon">🖼️</div>
+                        <div class="upload-text">Click to upload texture file</div>
+                        <div class="upload-subtext">.png format only</div>
+                        <div class="file-name" id="pngFileName">No file chosen</div>
+                    </div>
+                    <input type="file" id="pngFile" accept=".png" hidden>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    Generate Pack
+                </button>
+            </form>
+            
+            <div class="download-area" id="downloadArea">
+                <div class="download-icon">✅</div>
+                <h3>Pack Generated Successfully!</h3>
+                <p>Your model pack is ready for download.</p>
+                <a href="#" class="download-btn" id="downloadLink">
+                    <span>⬇️</span> Download pack.zip
+                </a>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to use:</h3>
+            <ul>
+                <li>Enter a unique ID for your model (no spaces, use underscores)</li>
+                <li>Upload your model JSON file (exported from your 3D modeling software)</li>
+                <li>Upload the texture PNG file (512x512 or 1024x1024 recommended)</li>
+                <li>Click "Generate Pack" to create your downloadable zip file</li>
+            </ul>
+        </div>
+    </div>
 
-  <label>Model ID (e.g. waffle_shield):
-    <input id="model-id" type="text" />
-  </label>
-  <br /><br />
-
-  <label>Model JSON:
-    <input id="model-json" type="file" accept=".json" />
-  </label>
-  <br /><br />
-
-  <label>Texture PNG:
-    <input id="texture-png" type="file" accept=".png" />
-  </label>
-  <br /><br />
-
-  <button id="build-zip">Download pack.zip</button>
-
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="script.js"></script>
+    <script>
+        // Handle file input display
+        document.getElementById('jsonFile').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || 'No file chosen';
+            document.getElementById('jsonFileName').textContent = fileName;
+        });
+        
+        document.getElementById('pngFile').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || 'No file chosen';
+            document.getElementById('pngFileName').textContent = fileName;
+        });
+        
+        // Handle form submission (demo)
+        document.getElementById('modelForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const modelId = document.querySelector('.form-input').value;
+            const jsonFile = document.getElementById('jsonFile').files[0];
+            const pngFile = document.getElementById('pngFile').files[0];
+            
+            // Simple validation
+            if (!modelId || !jsonFile || !pngFile) {
+                alert('Please fill in all fields and upload both files.');
+                return;
+            }
+            
+            // Show download area (in a real app, this would be after server processing)
+            document.getElementById('downloadArea').style.display = 'block';
+            
+            // Scroll to download area
+            document.getElementById('downloadArea').scrollIntoView({ behavior: 'smooth' });
+            
+            // For demo purposes, create a dummy zip file
+            const dummyContent = `Model Pack Generated Successfully!\n\nModel ID: ${modelId}\nJSON: ${jsonFile.name}\nTexture: ${pngFile.name}\n\nGenerated at: ${new Date().toLocaleString()}`;
+            const blob = new Blob([dummyContent], { type: 'application/zip' });
+            const url = URL.createObjectURL(blob);
+            
+            document.getElementById('downloadLink').href = url;
+            document.getElementById('downloadLink').download = `pack_${modelId}.zip`;
+        });
+    </script>
 </body>
 </html>
