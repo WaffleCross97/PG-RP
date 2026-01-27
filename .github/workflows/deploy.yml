@@ -3,6 +3,12 @@ name: Build and Deploy Packs
 on:
   push:
     branches: [ main ]
+    # Only run when files relevant to the PACKS change, not on every commit
+    paths:
+      - 'Waffle_Music_Disc/**'
+      - 'Waffle_Music_Disc_Bedrock/**'
+      # Add other paths containing your model source files
+      - 'assets/minecraft/**'
 
 jobs:
   build:
@@ -33,30 +39,6 @@ jobs:
           git commit -m "Update packs: $(date)"
           git push
 
-  deploy-pages:
-    needs: build  # Wait for build job to finish
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-        
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-          # Upload ALL files including the generated pack.zip
-          path: '.'
-          
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+  # REMOVE the 'deploy-pages' job entirely
+  # It's not needed because your HTML site is static
+  # and doesn't change when packs are updated
