@@ -1,4 +1,4 @@
-name: Build Java and Bedrock Packs
+name: Build and Deploy Packs
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
         run: zip -r ../pack.zip assets/ pack.mcmeta pack.png
         working-directory: ./Waffle_Music_Disc
 
-      # 2. Create the Bedrock .mcpack (This is just a zip with the .mcpack extension)
+      # 2. Create the Bedrock .mcpack
       - name: Create Bedrock Pack
         run: zip -r ../Waffle_Music.mcpack manifest.json pack_icon.png textures/ sounds/ texts/
         working-directory: ./Waffle_Music_Disc_Bedrock
@@ -29,7 +29,34 @@ jobs:
           sha1sum pack.zip | awk '{ print $1 }' > hash.txt
           git config --global user.name "PackBot"
           git config --global user.email "bot@github.com"
-          # Adding the .mcpack file specifically
           git add pack.zip Waffle_Music.mcpack hash.txt
-          git commit -m "Update Java & Bedrock .mcpack: $(date)"
+          git commit -m "Update packs: $(date)"
           git push
+
+  deploy-pages:
+    needs: build  # Wait for build job to finish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          # Upload ALL files including the generated pack.zip
+          path: '.'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
