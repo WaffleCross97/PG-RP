@@ -85,6 +85,7 @@
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
         
+        /* Drag and Drop File Upload Areas */
         .file-upload {
             position: relative;
             border: 2px dashed rgba(255, 255, 255, 0.2);
@@ -94,6 +95,17 @@
             background: rgba(0, 0, 0, 0.2);
             cursor: pointer;
             transition: all 0.3s ease;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .file-upload.drag-over {
+            border-color: #4cc9f0;
+            background: rgba(76, 201, 240, 0.1);
+            border-width: 3px;
         }
         
         .file-upload:hover {
@@ -115,12 +127,24 @@
         .upload-subtext {
             color: #a0a0a0;
             font-size: 0.9rem;
+            margin-bottom: 1rem;
         }
         
         .file-name {
             margin-top: 1rem;
             color: #4cc9f0;
             font-weight: 500;
+            max-width: 100%;
+            word-break: break-all;
+            text-align: center;
+        }
+        
+        .file-preview {
+            margin-top: 10px;
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .submit-btn {
@@ -145,6 +169,12 @@
         
         .submit-btn:active {
             transform: translateY(0);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
         
         .status-area {
@@ -242,19 +272,29 @@
             border-left: 3px solid #4361ee;
         }
         
+        .file-types {
+            display: inline-block;
+            background: rgba(76, 201, 240, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
         @media (max-width: 600px) {
             .container { padding: 1rem; }
             .form-container { padding: 1.5rem; }
             .header { padding: 1.5rem; }
             .logo { font-size: 2rem; }
+            .file-upload { min-height: 150px; padding: 2rem 1rem; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1 class="logo">PG-RP ModelApplier Uploader</h1>
-            <p class="subtitle">Upload custom models with ModelApplier compatibility</p>
+            <h1 class="logo">PG-RP Model Uploader</h1>
+            <p class="subtitle">Drag & Drop your model files or click to browse</p>
         </div>
         
         <div class="form-container">
@@ -286,25 +326,30 @@
                     </small>
                 </div>
                 
-                <!-- Step 3: File uploads -->
+                <!-- Step 3: Drag & Drop for JSON -->
                 <div class="form-group">
                     <label class="form-label">Model JSON File:</label>
-                    <div class="file-upload" onclick="document.getElementById('jsonFile').click()">
+                    <div class="file-upload" id="jsonDropZone">
                         <div class="upload-icon">📄</div>
-                        <div class="upload-text">Click to upload JSON file</div>
-                        <div class="upload-subtext">Your custom 3D model from Blockbench</div>
+                        <div class="upload-text">Drag & Drop JSON file here</div>
+                        <div class="upload-subtext">or click to browse</div>
+                        <span class="file-types">.json only</span>
                         <div class="file-name" id="jsonFileName">No file chosen</div>
+                        <div id="jsonPreview"></div>
                     </div>
                     <input type="file" id="jsonFile" accept=".json" hidden>
                 </div>
                 
+                <!-- Step 4: Drag & Drop for PNG -->
                 <div class="form-group">
                     <label class="form-label">Texture PNG File:</label>
-                    <div class="file-upload" onclick="document.getElementById('pngFile').click()">
+                    <div class="file-upload" id="pngDropZone">
                         <div class="upload-icon">🖼️</div>
-                        <div class="upload-text">Click to upload texture file</div>
-                        <div class="upload-subtext">Texture image for your model</div>
+                        <div class="upload-text">Drag & Drop PNG file here</div>
+                        <div class="upload-subtext">or click to browse</div>
+                        <span class="file-types">.png only</span>
                         <div class="file-name" id="pngFileName">No file chosen</div>
+                        <div id="pngPreview"></div>
                     </div>
                     <input type="file" id="pngFile" accept=".png" hidden>
                 </div>
@@ -325,7 +370,7 @@
                     </p>
                 </div>
                 
-                <button type="submit" class="submit-btn">
+                <button type="submit" class="submit-btn" id="submitBtn">
                     Upload All Files to GitHub
                 </button>
                 
@@ -377,6 +422,13 @@
     </div>
 
     <script>
+        // DOM Elements
+        const jsonDropZone = document.getElementById('jsonDropZone');
+        const pngDropZone = document.getElementById('pngDropZone');
+        const jsonFileInput = document.getElementById('jsonFile');
+        const pngFileInput = document.getElementById('pngFile');
+        const submitBtn = document.getElementById('submitBtn');
+        
         // Update previews as user types
         document.getElementById('modelName').addEventListener('input', function(e) {
             const modelName = e.target.value.trim().toLowerCase() || 'model_name';
@@ -406,26 +458,164 @@
             }
         });
         
-        // Handle file input display
-        document.getElementById('jsonFile').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || 'No file chosen';
-            document.getElementById('jsonFileName').textContent = fileName;
+        // ========== DRAG & DROP FUNCTIONALITY ==========
+        
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            [jsonDropZone, pngDropZone].forEach(dropZone => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Highlight drop zone when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            [jsonDropZone, pngDropZone].forEach(dropZone => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            [jsonDropZone, pngDropZone].forEach(dropZone => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+        });
+        
+        function highlight(e) {
+            this.classList.add('drag-over');
+        }
+        
+        function unhighlight(e) {
+            this.classList.remove('drag-over');
+        }
+        
+        // Handle drop
+        jsonDropZone.addEventListener('drop', handleJsonDrop, false);
+        pngDropZone.addEventListener('drop', handlePngDrop, false);
+        
+        function handleJsonDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type === 'application/json' || file.name.endsWith('.json')) {
+                    handleJsonFile(file);
+                } else {
+                    alert('Please drop a JSON file (.json)');
+                }
+            }
+        }
+        
+        function handlePngDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type === 'image/png' || file.name.endsWith('.png')) {
+                    handlePngFile(file);
+                } else {
+                    alert('Please drop a PNG image file (.png)');
+                }
+            }
+        }
+        
+        // Handle file selection via click
+        jsonDropZone.addEventListener('click', () => jsonFileInput.click());
+        pngDropZone.addEventListener('click', () => pngFileInput.click());
+        
+        // Handle file input change
+        jsonFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleJsonFile(e.target.files[0]);
+            }
+        });
+        
+        pngFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handlePngFile(e.target.files[0]);
+            }
+        });
+        
+        // Handle JSON file
+        function handleJsonFile(file) {
+            document.getElementById('jsonFileName').textContent = file.name;
+            jsonFileInput.files = createFileList(file);
             
             // Auto-fill model name from filename if empty
-            if (!document.getElementById('modelName').value && fileName) {
-                const nameWithoutExt = fileName.replace('.json', '').toLowerCase();
+            if (!document.getElementById('modelName').value && file.name) {
+                const nameWithoutExt = file.name.replace('.json', '').toLowerCase();
                 document.getElementById('modelName').value = nameWithoutExt;
                 document.getElementById('modelPreview').textContent = `models/item/${nameWithoutExt}.json`;
                 document.getElementById('previewModelName').textContent = nameWithoutExt;
                 document.getElementById('structModel').textContent = nameWithoutExt;
                 document.getElementById('structTexture').textContent = nameWithoutExt;
             }
-        });
+            
+            // Preview JSON content
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    const preview = document.getElementById('jsonPreview');
+                    preview.innerHTML = `<div style="color: #4cc9f0; margin-top: 10px;">
+                        ✓ Valid JSON<br>
+                        <small style="color: #a0a0a0;">${Object.keys(json).length} properties</small>
+                    </div>`;
+                } catch (err) {
+                    document.getElementById('jsonPreview').innerHTML = 
+                        `<div style="color: #e74c3c; margin-top: 10px;">✗ Invalid JSON format</div>`;
+                }
+            };
+            reader.readAsText(file);
+            
+            checkFormCompletion();
+        }
         
-        document.getElementById('pngFile').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || 'No file chosen';
-            document.getElementById('pngFileName').textContent = fileName;
-        });
+        // Handle PNG file
+        function handlePngFile(file) {
+            document.getElementById('pngFileName').textContent = file.name;
+            pngFileInput.files = createFileList(file);
+            
+            // Preview image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('pngPreview');
+                preview.innerHTML = `<img src="${e.target.result}" class="file-preview" alt="Texture preview">`;
+            };
+            reader.readAsDataURL(file);
+            
+            checkFormCompletion();
+        }
+        
+        // Helper to create a FileList from a single file
+        function createFileList(file) {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            return dataTransfer.files;
+        }
+        
+        // Check if form is complete
+        function checkFormCompletion() {
+            const modelName = document.getElementById('modelName').value.trim();
+            const itemName = document.getElementById('itemName').value.trim();
+            const hasJson = jsonFileInput.files.length > 0;
+            const hasPng = pngFileInput.files.length > 0;
+            
+            submitBtn.disabled = !(modelName && itemName && hasJson && hasPng);
+        }
+        
+        // Check form on input
+        document.getElementById('modelName').addEventListener('input', checkFormCompletion);
+        document.getElementById('itemName').addEventListener('input', checkFormCompletion);
+        
+        // ========== FORM SUBMISSION ==========
         
         // Handle form submission - Upload ALL files to GitHub
         document.getElementById('modelForm').addEventListener('submit', async function(e) {
@@ -434,8 +624,8 @@
             // Get form values
             const modelName = document.getElementById('modelName').value.trim().toLowerCase();
             const itemName = document.getElementById('itemName').value.trim().toLowerCase();
-            const jsonFile = document.getElementById('jsonFile').files[0];
-            const pngFile = document.getElementById('pngFile').files[0];
+            const jsonFile = jsonFileInput.files[0];
+            const pngFile = pngFileInput.files[0];
             
             // Validation
             if (!modelName || !itemName) {
@@ -474,11 +664,12 @@
             document.getElementById('loading').style.display = 'block';
             document.getElementById('loadingText').textContent = 'Uploading files to GitHub...';
             document.getElementById('statusArea').style.display = 'none';
+            submitBtn.disabled = true;
             
             try {
                 // Read files
-                const jsonText = await jsonFile.text();
-                const pngBuffer = await pngFile.arrayBuffer();
+                const jsonText = await readFileAsText(jsonFile);
+                const pngBuffer = await readFileAsArrayBuffer(pngFile);
                 const pngBase64 = arrayBufferToBase64(pngBuffer);
                 
                 // 1. Upload ITEM JSON (for ModelApplier)
@@ -507,8 +698,20 @@
                 let modelJson;
                 try {
                     modelJson = JSON.parse(jsonText);
-                    // Ensure it's a valid Minecraft model
-                    if (!modelJson.parent && !modelJson.elements) {
+                    
+                    // FIX: Update texture references to ALWAYS use "item/{modelName}"
+                    if (modelJson.textures) {
+                        for (const key in modelJson.textures) {
+                            const currentTexture = modelJson.textures[key];
+                            if (typeof currentTexture === 'string') {
+                                // Always set to "item/{modelName}" - this fixes the issue!
+                                modelJson.textures[key] = `item/${modelName}`;
+                            }
+                        }
+                    }
+                    
+                    // If no textures or not a valid model, create fallback
+                    if (!modelJson.textures && (!modelJson.parent && !modelJson.elements)) {
                         modelJson = {
                             "parent": "item/generated",
                             "textures": {
@@ -530,7 +733,7 @@
                     `Add 3D model: ${modelName}.json`);
                 
                 if (!modelResult.success) {
-                    throw new Error(`Failed to upload model JSON: ${itemResult.message}`);
+                    throw new Error(`Failed to upload model JSON: ${modelResult.message}`);
                 }
                 
                 // 3. Upload TEXTURE PNG
@@ -545,6 +748,7 @@
                 
                 // Success!
                 document.getElementById('loading').style.display = 'none';
+                submitBtn.disabled = false;
                 document.getElementById('statusArea').innerHTML = `
                     <div class="success-box">
                         <h3 style="color: #2ecc71; margin-bottom: 1rem;">✅ All Files Uploaded Successfully!</h3>
@@ -559,6 +763,7 @@
                             &nbsp;&nbsp;}<br>
                             }<br><br>
                             2. <strong>models/item/${modelName}.json</strong> (your 3D model)<br>
+                            &nbsp;&nbsp;<em>Texture will be: <code>"item/${modelName}"</code></em><br>
                             3. <strong>textures/item/${modelName}.png</strong> (your texture)
                         </div>
                         
@@ -593,12 +798,15 @@
                 document.getElementById('jsonPreview').style.display = 'none';
                 document.getElementById('jsonFileName').textContent = 'No file chosen';
                 document.getElementById('pngFileName').textContent = 'No file chosen';
+                document.getElementById('jsonPreview').innerHTML = '';
+                document.getElementById('pngPreview').innerHTML = '';
                 document.getElementById('modelPreview').textContent = 'models/item/{name}.json';
                 document.getElementById('itemPreview').textContent = 'items/{item_name}.json';
                 document.getElementById('itemRenamePreview').textContent = 'item_name';
                 
             } catch (error) {
                 document.getElementById('loading').style.display = 'none';
+                submitBtn.disabled = false;
                 document.getElementById('statusArea').innerHTML = `
                     <div class="error-box">
                         <h3 style="color: #e74c3c; margin-bottom: 1rem;">❌ Upload Failed</h3>
@@ -622,6 +830,24 @@
         });
         
         // Helper functions
+        function readFileAsText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+        
+        function readFileAsArrayBuffer(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        
         function arrayBufferToBase64(buffer) {
             let binary = '';
             const bytes = new Uint8Array(buffer);
