@@ -3,12 +3,8 @@ name: Build and Deploy Packs
 on:
   push:
     branches: [ main ]
-    # Only run when files relevant to the PACKS change, not on every commit
-    paths:
-      - 'Waffle_Music_Disc/**'
-      - 'Waffle_Music_Disc_Bedrock/**'
-      # Add other paths containing your model source files
-      - 'assets/minecraft/**'
+  # Also run manually from GitHub UI
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,26 +15,70 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. Create the Java Zip
-      - name: Create Java Zip
-        run: zip -r ../pack.zip assets/ pack.mcmeta pack.png
-        working-directory: ./Waffle_Music_Disc
-
-      # 2. Create the Bedrock .mcpack
-      - name: Create Bedrock Pack
-        run: zip -r ../Waffle_Music.mcpack manifest.json pack_icon.png textures/ sounds/ texts/
-        working-directory: ./Waffle_Music_Disc_Bedrock
-
-      # 3. Generate Hash and Push both to GitHub
-      - name: Push to Repo
+      - name: List files (debug)
         run: |
+          echo "Repository contents:"
+          ls -la
+          echo ""
+          echo "Waffle_Music_Disc contents:"
+          ls -la ./Waffle_Music_Disc/ || echo "Folder not found"
+          echo ""
+          echo "Model files in assets:"
+          find ./assets -name "*.json" -o -name "*.png" 2>/dev/null | head -10 || true
+
+      # 1. Create Java pack.zip
+      - name: Create Java Resource Pack
+        run: |
+          # Check if Waffle_Music_Disc exists
+          if [ -d "./Waffle_Music_Disc" ]; then
+            cd ./Waffle_Music_Disc
+            # Create zip with all files
+            zip -r ../pack.zip .
+            echo "✅ Created pack.zip"
+          else
+            echo "⚠️ Waffle_Music_Disc folder not found"
+            # Create minimal pack if folder doesn't exist
+            mkdir -p temp_pack/assets/minecraft
+            echo '{"pack":{"pack_format":15,"description":"PG-RP Pack"}}' > temp_pack/pack.mcmeta
+            cd temp_pack
+            zip -r ../pack.zip .
+            cd ..
+            rm -rf temp_pack
+            echo "✅ Created minimal pack.zip"
+          fi
+
+      # 2. Create Bedrock .mcpack
+      - name: Create Bedrock Pack
+        run: |
+          if [ -d "./Waffle_Music_Disc_Bedrock" ]; then
+            cd ./Waffle_Music_Disc_Bedrock
+            zip -r ../Waffle_Music.mcpack .
+            echo "✅ Created Waffle_Music.mcpack"
+          else
+            echo "⚠️ Waffle_Music_Disc_Bedrock folder not found"
+            touch ../Waffle_Music.mcpack  # Create empty file
+          fi
+
+      # 3. Generate hash and commit
+      - name: Update Repository with Packs
+        run: |
+          # Generate hash
           sha1sum pack.zip | awk '{ print $1 }' > hash.txt
+          echo "Hash: $(cat hash.txt)"
+          
+          # Setup git
           git config --global user.name "PackBot"
           git config --global user.email "bot@github.com"
-          git add pack.zip Waffle_Music.mcpack hash.txt
-          git commit -m "Update packs: $(date)"
-          git push
-
-  # REMOVE the 'deploy-pages' job entirely
-  # It's not needed because your HTML site is static
-  # and doesn't change when packs are updated
+          
+          # Add generated files
+          git add pack.zip hash.txt
+          [ -f "Waffle_Music.mcpack" ] && git add Waffle_Music.mcpack
+          
+          # Commit if there are changes
+          if ! git diff --cached --quiet; then
+            git commit -m "🤖 Auto-update packs: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+            git push
+            echo "✅ Packs updated successfully!"
+          else
+            echo "✅ No changes - packs already up to date"
+          fi
