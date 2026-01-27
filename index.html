@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Model Import Builder | PG-RP</title>
+    <title>PG-RP Model Uploader</title>
     <style>
-        /* Base Styles */
         * {
             margin: 0;
             padding: 0;
@@ -26,7 +25,6 @@
             padding: 2rem;
         }
         
-        /* Header */
         .header {
             text-align: center;
             margin-bottom: 3rem;
@@ -50,7 +48,6 @@
             font-size: 1.1rem;
         }
         
-        /* Main Form */
         .form-container {
             background: rgba(255, 255, 255, 0.08);
             padding: 2.5rem;
@@ -88,7 +85,6 @@
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
         
-        /* File Upload Areas */
         .file-upload {
             position: relative;
             border: 2px dashed rgba(255, 255, 255, 0.2);
@@ -127,7 +123,6 @@
             font-weight: 500;
         }
         
-        /* Button */
         .submit-btn {
             background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
             color: white;
@@ -152,36 +147,51 @@
             transform: translateY(0);
         }
         
-        /* Status/Download Area */
-        .download-area {
+        .status-area {
             margin-top: 2rem;
             text-align: center;
             padding: 2rem;
-            background: rgba(76, 201, 240, 0.1);
             border-radius: 10px;
-            border: 1px solid rgba(76, 201, 240, 0.3);
             display: none;
         }
         
-        .download-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: #4cc9f0;
-            color: #1a1a2e;
-            padding: 1rem 2rem;
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #4cc9f0;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .success-box {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(46, 204, 113, 0.3);
             border-radius: 10px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            padding: 1.5rem;
+            text-align: left;
         }
         
-        .download-btn:hover {
-            background: #3ab8df;
-            transform: translateY(-2px);
+        .error-box {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: left;
         }
         
-        /* Instructions */
         .instructions {
             margin-top: 2rem;
             padding: 1.5rem;
@@ -204,96 +214,212 @@
             margin-bottom: 0.5rem;
         }
         
-        /* Responsive */
+        .github-link {
+            color: #4cc9f0;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .github-link:hover {
+            text-decoration: underline;
+        }
+        
+        .file-structure {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .model-preview {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(67, 97, 238, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #4361ee;
+        }
+        
         @media (max-width: 600px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .form-container {
-                padding: 1.5rem;
-            }
-            
-            .header {
-                padding: 1.5rem;
-            }
-            
-            .logo {
-                font-size: 2rem;
-            }
+            .container { padding: 1rem; }
+            .form-container { padding: 1.5rem; }
+            .header { padding: 1.5rem; }
+            .logo { font-size: 2rem; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1 class="logo">Model Import Builder</h1>
-            <p class="subtitle">Convert your 3D models for PG-RP</p>
+            <h1 class="logo">PG-RP ModelApplier Uploader</h1>
+            <p class="subtitle">Upload custom models with ModelApplier compatibility</p>
         </div>
         
         <div class="form-container">
             <form id="modelForm">
+                <!-- Step 1: Custom Model Name -->
                 <div class="form-group">
-                    <label class="form-label">Model ID (e.g. waffle_shield):</label>
+                    <label class="form-label">Custom Model Name:</label>
                     <input type="text" 
                            class="form-input" 
-                           placeholder="Enter a unique model identifier"
+                           id="modelName"
+                           placeholder="waffle_shield, crown, custom_sword"
                            required>
+                    <small style="color: #a0a0a0; display: block; margin-top: 0.5rem;">
+                        This creates: <code id="modelPreview">models/item/{name}.json</code>
+                    </small>
                 </div>
                 
+                <!-- Step 2: Item Name (for ModelApplier) -->
                 <div class="form-group">
-                    <label class="form-label">Model JSON:</label>
+                    <label class="form-label">Item Name (for ModelApplier):</label>
+                    <input type="text" 
+                           class="form-input" 
+                           id="itemName"
+                           placeholder="coin, diamond_sword, shield"
+                           required>
+                    <small style="color: #a0a0a0; display: block; margin-top: 0.5rem;">
+                        This creates: <code id="itemPreview">items/{item_name}.json</code>
+                        <br>In-game: rename items to "<span id="itemRenamePreview">item_name</span>"
+                    </small>
+                </div>
+                
+                <!-- Step 3: File uploads -->
+                <div class="form-group">
+                    <label class="form-label">Model JSON File:</label>
                     <div class="file-upload" onclick="document.getElementById('jsonFile').click()">
                         <div class="upload-icon">📄</div>
                         <div class="upload-text">Click to upload JSON file</div>
-                        <div class="upload-subtext">.json format only</div>
+                        <div class="upload-subtext">Your custom 3D model from Blockbench</div>
                         <div class="file-name" id="jsonFileName">No file chosen</div>
                     </div>
                     <input type="file" id="jsonFile" accept=".json" hidden>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">Texture PNG:</label>
+                    <label class="form-label">Texture PNG File:</label>
                     <div class="file-upload" onclick="document.getElementById('pngFile').click()">
                         <div class="upload-icon">🖼️</div>
                         <div class="upload-text">Click to upload texture file</div>
-                        <div class="upload-subtext">.png format only</div>
+                        <div class="upload-subtext">Texture image for your model</div>
                         <div class="file-name" id="pngFileName">No file chosen</div>
                     </div>
                     <input type="file" id="pngFile" accept=".png" hidden>
                 </div>
                 
+                <!-- Preview of what will be created -->
+                <div class="model-preview" id="jsonPreview" style="display: none;">
+                    <p style="color: #4cc9f0; font-weight: 600; margin-bottom: 10px;">Items JSON that will be created:</p>
+                    <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px; font-family: monospace; font-size: 0.9rem;">
+{<br>
+&nbsp;&nbsp;"model": {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"type": "minecraft:model",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"model": "minecraft:item/<span id="previewModelName">model_name</span>"<br>
+&nbsp;&nbsp;}<br>
+}
+                    </div>
+                    <p style="margin-top: 10px; color: #a0a0a0; font-size: 0.9rem;">
+                        This goes in: <code>assets/minecraft/items/<span id="previewItemFileName">item_name</span>.json</code>
+                    </p>
+                </div>
+                
                 <button type="submit" class="submit-btn">
-                    Generate Pack
+                    Upload All Files to GitHub
                 </button>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p id="loadingText">Uploading files to GitHub...</p>
+                </div>
             </form>
             
-            <div class="download-area" id="downloadArea">
-                <div class="download-icon">✅</div>
-                <h3>Pack Generated Successfully!</h3>
-                <p>Your model pack is ready for download.</p>
-                <a href="#" class="download-btn" id="downloadLink">
-                    <span>⬇️</span> Download pack.zip
-                </a>
+            <div class="status-area" id="statusArea">
+                <!-- Status will be shown here -->
             </div>
         </div>
         
         <div class="instructions">
-            <h3>How to use:</h3>
+            <h3>How ModelApplier Works:</h3>
             <ul>
-                <li>Enter a unique ID for your model (no spaces, use underscores)</li>
-                <li>Upload your model JSON file (exported from your 3D modeling software)</li>
-                <li>Upload the texture PNG file (512x512 or 1024x1024 recommended)</li>
-                <li>Click "Generate Pack" to create your downloadable zip file</li>
+                <li><strong>Custom Model Name:</strong> Your 3D model file name (goes in <code>models/item/</code>)</li>
+                <li><strong>Item Name:</strong> What users rename items to in-game (goes in <code>items/</code>)</li>
+                <li><strong>Three files are created:</strong>
+                    <ol>
+                        <li><code>items/{item_name}.json</code> ← Tells ModelApplier what model to use</li>
+                        <li><code>models/item/{model_name}.json</code> ← Your 3D model</li>
+                        <li><code>textures/item/{model_name}.png</code> ← Your texture</li>
+                    </ol>
+                </li>
+                <li><strong>In-game usage:</strong>
+                    <ol>
+                        <li>Rename any item to your "Item Name"</li>
+                        <li>ModelApplier looks for <code>items/{item_name}.json</code></li>
+                        <li>Finds <code>"model": "minecraft:item/{model_name}"</code></li>
+                        <li>Uses your custom model from <code>models/item/{model_name}.json</code></li>
+                    </ol>
+                </li>
             </ul>
+            
+            <div class="file-structure">
+                <strong>Complete Structure:</strong><br>
+                Waffle_Music_Disc/<br>
+                ├── assets/minecraft/<br>
+                │   ├── items/<br>
+                │   │   └── <span id="structItem">item_name</span>.json<br>
+                │   ├── models/item/<br>
+                │   │   └── <span id="structModel">model_name</span>.json<br>
+                │   └── textures/item/<br>
+                │       └── <span id="structTexture">model_name</span>.png
+            </div>
         </div>
     </div>
 
     <script>
+        // Update previews as user types
+        document.getElementById('modelName').addEventListener('input', function(e) {
+            const modelName = e.target.value.trim().toLowerCase() || 'model_name';
+            document.getElementById('modelPreview').textContent = `models/item/${modelName}.json`;
+            document.getElementById('previewModelName').textContent = modelName;
+            document.getElementById('structModel').textContent = modelName;
+            document.getElementById('structTexture').textContent = modelName;
+            
+            // Show/hide JSON preview
+            const itemName = document.getElementById('itemName').value.trim();
+            if (modelName && itemName) {
+                document.getElementById('jsonPreview').style.display = 'block';
+            }
+        });
+        
+        document.getElementById('itemName').addEventListener('input', function(e) {
+            const itemName = e.target.value.trim().toLowerCase() || 'item_name';
+            document.getElementById('itemPreview').textContent = `items/${itemName}.json`;
+            document.getElementById('itemRenamePreview').textContent = itemName;
+            document.getElementById('previewItemFileName').textContent = itemName;
+            document.getElementById('structItem').textContent = itemName;
+            
+            // Show/hide JSON preview
+            const modelName = document.getElementById('modelName').value.trim();
+            if (modelName && itemName) {
+                document.getElementById('jsonPreview').style.display = 'block';
+            }
+        });
+        
         // Handle file input display
         document.getElementById('jsonFile').addEventListener('change', function(e) {
             const fileName = e.target.files[0]?.name || 'No file chosen';
             document.getElementById('jsonFileName').textContent = fileName;
+            
+            // Auto-fill model name from filename if empty
+            if (!document.getElementById('modelName').value && fileName) {
+                const nameWithoutExt = fileName.replace('.json', '').toLowerCase();
+                document.getElementById('modelName').value = nameWithoutExt;
+                document.getElementById('modelPreview').textContent = `models/item/${nameWithoutExt}.json`;
+                document.getElementById('previewModelName').textContent = nameWithoutExt;
+                document.getElementById('structModel').textContent = nameWithoutExt;
+                document.getElementById('structTexture').textContent = nameWithoutExt;
+            }
         });
         
         document.getElementById('pngFile').addEventListener('change', function(e) {
@@ -301,35 +427,258 @@
             document.getElementById('pngFileName').textContent = fileName;
         });
         
-        // Handle form submission (demo)
-        document.getElementById('modelForm').addEventListener('submit', function(e) {
+        // Handle form submission - Upload ALL files to GitHub
+        document.getElementById('modelForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // Get form values
-            const modelId = document.querySelector('.form-input').value;
+            const modelName = document.getElementById('modelName').value.trim().toLowerCase();
+            const itemName = document.getElementById('itemName').value.trim().toLowerCase();
             const jsonFile = document.getElementById('jsonFile').files[0];
             const pngFile = document.getElementById('pngFile').files[0];
             
-            // Simple validation
-            if (!modelId || !jsonFile || !pngFile) {
-                alert('Please fill in all fields and upload both files.');
+            // Validation
+            if (!modelName || !itemName) {
+                alert('Please enter both Model Name and Item Name.');
                 return;
             }
             
-            // Show download area (in a real app, this would be after server processing)
-            document.getElementById('downloadArea').style.display = 'block';
+            if (!/^[a-z0-9_]+$/.test(modelName)) {
+                alert('Model Name can only contain lowercase letters, numbers, and underscores.');
+                return;
+            }
             
-            // Scroll to download area
-            document.getElementById('downloadArea').scrollIntoView({ behavior: 'smooth' });
+            if (!/^[a-z0-9_]+$/.test(itemName)) {
+                alert('Item Name can only contain lowercase letters, numbers, and underscores.');
+                return;
+            }
             
-            // For demo purposes, create a dummy zip file
-            const dummyContent = `Model Pack Generated Successfully!\n\nModel ID: ${modelId}\nJSON: ${jsonFile.name}\nTexture: ${pngFile.name}\n\nGenerated at: ${new Date().toLocaleString()}`;
-            const blob = new Blob([dummyContent], { type: 'application/zip' });
-            const url = URL.createObjectURL(blob);
+            if (!jsonFile) {
+                alert('Please upload a JSON model file.');
+                return;
+            }
             
-            document.getElementById('downloadLink').href = url;
-            document.getElementById('downloadLink').download = `pack_${modelId}.zip`;
+            if (!pngFile) {
+                alert('Please upload a PNG texture file.');
+                return;
+            }
+            
+            // Ask for GitHub PAT
+            const githubToken = prompt('Enter your GitHub Personal Access Token (with "repo" scope):');
+            if (!githubToken) {
+                alert('GitHub token is required to upload files.');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loadingText').textContent = 'Uploading files to GitHub...';
+            document.getElementById('statusArea').style.display = 'none';
+            
+            try {
+                // Read files
+                const jsonText = await jsonFile.text();
+                const pngBuffer = await pngFile.arrayBuffer();
+                const pngBase64 = arrayBufferToBase64(pngBuffer);
+                
+                // 1. Upload ITEM JSON (for ModelApplier)
+                document.getElementById('loadingText').textContent = 'Uploading items JSON...';
+                const itemPath = `Waffle_Music_Disc/assets/minecraft/items/${itemName}.json`;
+                const itemJson = {
+                    "model": {
+                        "type": "minecraft:model",
+                        "model": `minecraft:item/${modelName}`
+                    }
+                };
+                
+                const itemResult = await uploadToGitHub(githubToken, itemPath, 
+                    JSON.stringify(itemJson, null, 2), 
+                    `Add ModelApplier item: ${itemName}.json`);
+                
+                if (!itemResult.success) {
+                    throw new Error(`Failed to upload item JSON: ${itemResult.message}`);
+                }
+                
+                // 2. Upload MODEL JSON (custom 3D model)
+                document.getElementById('loadingText').textContent = 'Uploading model JSON...';
+                const modelPath = `Waffle_Music_Disc/assets/minecraft/models/item/${modelName}.json`;
+                
+                // Validate/clean the model JSON
+                let modelJson;
+                try {
+                    modelJson = JSON.parse(jsonText);
+                    // Ensure it's a valid Minecraft model
+                    if (!modelJson.parent && !modelJson.elements) {
+                        modelJson = {
+                            "parent": "item/generated",
+                            "textures": {
+                                "layer0": `item/${modelName}`
+                            }
+                        };
+                    }
+                } catch (err) {
+                    modelJson = {
+                        "parent": "item/generated",
+                        "textures": {
+                            "layer0": `item/${modelName}`
+                        }
+                    };
+                }
+                
+                const modelResult = await uploadToGitHub(githubToken, modelPath, 
+                    JSON.stringify(modelJson, null, 2), 
+                    `Add 3D model: ${modelName}.json`);
+                
+                if (!modelResult.success) {
+                    throw new Error(`Failed to upload model JSON: ${itemResult.message}`);
+                }
+                
+                // 3. Upload TEXTURE PNG
+                document.getElementById('loadingText').textContent = 'Uploading texture PNG...';
+                const texturePath = `Waffle_Music_Disc/assets/minecraft/textures/item/${modelName}.png`;
+                const textureResult = await uploadToGitHub(githubToken, texturePath, 
+                    pngBase64, `Add texture: ${modelName}.png`, true);
+                
+                if (!textureResult.success) {
+                    throw new Error(`Failed to upload texture: ${textureResult.message}`);
+                }
+                
+                // Success!
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('statusArea').innerHTML = `
+                    <div class="success-box">
+                        <h3 style="color: #2ecc71; margin-bottom: 1rem;">✅ All Files Uploaded Successfully!</h3>
+                        
+                        <p><strong>Files added to your repository:</strong></p>
+                        <div class="file-structure">
+                            1. <strong>items/${itemName}.json</strong> (for ModelApplier):<br>
+                            {<br>
+                            &nbsp;&nbsp;"model": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"type": "minecraft:model",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"model": "minecraft:item/${modelName}"<br>
+                            &nbsp;&nbsp;}<br>
+                            }<br><br>
+                            2. <strong>models/item/${modelName}.json</strong> (your 3D model)<br>
+                            3. <strong>textures/item/${modelName}.png</strong> (your texture)
+                        </div>
+                        
+                        <p style="margin-top: 15px;"><strong>In-game usage with ModelApplier:</strong></p>
+                        <ol style="margin: 10px 0 15px 1.5rem;">
+                            <li>Rename ANY item to: <code style="color: #4cc9f0; font-weight: bold;">${itemName}</code></li>
+                            <li>Hold the renamed item</li>
+                            <li>Press G → ModelApplier → "Apply Item Model"</li>
+                            <li>Item will show as: <code>${modelName}</code> model</li>
+                        </ol>
+                        
+                        <p><strong>What happens next:</strong></p>
+                        <ul style="margin: 10px 0; padding-left: 1.5rem;">
+                            <li>GitHub Actions will rebuild <code>pack.zip</code> automatically</li>
+                            <li>Updated pack available in 1-2 minutes</li>
+                            <li>Check build: 
+                                <a href="https://github.com/WaffleCross97/PG-RP/actions" 
+                                   class="github-link" target="_blank">Actions Status</a>
+                            </li>
+                            <li>Download: 
+                                <a href="https://wafflecross97.github.io/PG-RP/pack.zip" 
+                                   class="github-link" target="_blank">pack.zip</a>
+                            </li>
+                        </ul>
+                    </div>
+                `;
+                document.getElementById('statusArea').style.display = 'block';
+                document.getElementById('statusArea').scrollIntoView({ behavior: 'smooth' });
+                
+                // Reset form
+                document.getElementById('modelForm').reset();
+                document.getElementById('jsonPreview').style.display = 'none';
+                document.getElementById('jsonFileName').textContent = 'No file chosen';
+                document.getElementById('pngFileName').textContent = 'No file chosen';
+                document.getElementById('modelPreview').textContent = 'models/item/{name}.json';
+                document.getElementById('itemPreview').textContent = 'items/{item_name}.json';
+                document.getElementById('itemRenamePreview').textContent = 'item_name';
+                
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('statusArea').innerHTML = `
+                    <div class="error-box">
+                        <h3 style="color: #e74c3c; margin-bottom: 1rem;">❌ Upload Failed</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p style="margin-top: 10px;">Possible issues:</p>
+                        <ul style="margin: 5px 0; padding-left: 1.5rem;">
+                            <li>Invalid GitHub token</li>
+                            <li>Token doesn't have "repo" permissions</li>
+                            <li>File already exists with that name</li>
+                            <li>Network issues</li>
+                        </ul>
+                        <p style="margin-top: 10px;">
+                            <a href="https://github.com/settings/tokens" class="github-link" target="_blank">
+                                Create a new token with "repo" scope
+                            </a>
+                        </p>
+                    </div>
+                `;
+                document.getElementById('statusArea').style.display = 'block';
+            }
         });
+        
+        // Helper functions
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return btoa(binary);
+        }
+        
+        async function uploadToGitHub(token, path, content, message, isBase64 = false) {
+            const repo = "WaffleCross97/PG-RP";
+            const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
+            
+            // Check if file exists
+            let sha = null;
+            try {
+                const checkResponse = await fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                if (checkResponse.ok) {
+                    const data = await checkResponse.json();
+                    sha = data.sha;
+                }
+            } catch (error) {
+                // File doesn't exist - that's OK
+            }
+            
+            // Prepare request
+            const body = {
+                message: message,
+                content: isBase64 ? content : btoa(unescape(encodeURIComponent(content))),
+                branch: "main"
+            };
+            
+            if (sha) body.sha = sha;
+            
+            // Upload
+            const response = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify(body)
+            });
+            
+            const result = await response.json();
+            return {
+                success: response.ok,
+                message: result.message,
+                data: result
+            };
+        }
     </script>
 </body>
 </html>
