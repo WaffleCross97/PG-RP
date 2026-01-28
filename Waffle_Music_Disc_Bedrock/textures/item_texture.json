@@ -1,0 +1,37 @@
+{
+  "resource_pack_name": "waffle_music_disc_Bedrock",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "coin": {
+      "textures": "textures/items/coin"
+    },
+    "crown": {
+      "textures": "textures/items/crown"
+    },
+    "lilypad_shield": {
+      "textures": "textures/items/lilypad_shield"
+    },
+    "police_hat": {
+      "textures": "textures/items/police_hat"
+    },
+    "traptanium_axe": {
+      "textures": "textures/items/traptanium_axe"
+    },
+    "traptanium_pickaxe": {
+      "textures": "textures/items/traptanium_pickaxe"
+    },
+    "traptanium_shield": {
+      "textures": "textures/items/traptanium_shield"
+    },
+    },
+    "traptanium_sword": {
+      "textures": "textures/items/traptanium_sword"
+    },
+    "waffle_shield": {
+      "textures": "textures/items/waffle_shield"
+    },
+    "waffle_sword": {
+      "textures": "textures/items/waffle_sword"
+    }
+  }
+}
