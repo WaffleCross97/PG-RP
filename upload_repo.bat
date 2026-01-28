@@ -142,7 +142,12 @@ echo [5/6] Pushing to GitHub...
 echo.
 git push origin main
 
-if errorlevel 1 (
+:: Check if push was successful by looking at output
+:: We need to capture the output and check for success
+>nul 2>&1 git push origin main && (
+    echo ✓ Push successful!
+    goto :push_success
+) || (
     echo.
     echo ERROR: Push failed!
     echo Possible reasons:
@@ -156,6 +161,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
+:push_success
 :: Success!
 echo.
 echo ========================================
