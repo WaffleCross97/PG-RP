@@ -32,7 +32,7 @@ if not exist ".git" (
 
 :: Step 0: Clean up old pack files
 echo.
-echo [0/6] Cleaning up old pack files...
+echo [0/7] Cleaning up old pack files...
 if exist "pack.zip" (
     echo Deleting pack.zip...
     del "pack.zip"
@@ -47,9 +47,30 @@ if exist "hash.txt" (
 )
 echo ✓ Old pack files removed
 
-:: Step 1: Check current status
+:: Step 1: Pull latest changes first (important!)
 echo.
-echo [1/6] Checking repository status...
+echo [1/7] Pulling latest changes from GitHub...
+echo.
+git pull origin main
+
+if errorlevel 1 (
+    echo WARNING: Pull failed or had conflicts!
+    echo.
+    echo If you see merge conflicts above:
+    echo 1. Resolve the conflicts manually
+    echo 2. Run: git add .
+    echo 3. Run: git commit -m "Merge conflicts resolved"
+    echo 4. Run this script again
+    echo.
+    pause
+    exit /b 1
+)
+
+echo ✓ Pull successful!
+
+:: Step 2: Check current status
+echo.
+echo [2/7] Checking repository status...
 git status
 
 :: Ask user what they want to upload
@@ -64,9 +85,9 @@ echo 4. Custom selection
 echo.
 set /p CHOICE="Enter choice (1-4): "
 
-:: Step 2: Stage files based on choice
+:: Step 3: Stage files based on choice
 echo.
-echo [2/6] Staging files...
+echo [3/7] Staging files...
 goto choice_%CHOICE%
 
 :choice_1
@@ -111,15 +132,15 @@ if errorlevel 1 (
     goto :nothing_to_commit
 )
 
-:: Step 3: Show what will be uploaded
+:: Step 4: Show what will be uploaded
 echo.
-echo [3/6] Files to be uploaded:
+echo [4/7] Files to be uploaded:
 echo ---------------------------
 git diff --cached --name-only
 
-:: Step 4: Create commit
+:: Step 5: Create commit
 echo.
-echo [4/6] Creating commit...
+echo [5/7] Creating commit...
 for /f "tokens=1-3 delims=/ " %%a in ('date /t') do set DD=%%a
 for /f "tokens=2 delims=/ " %%a in ('date /t') do set MM=%%a  
 for /f "tokens=3 delims=/ " %%a in ('date /t') do set YYYY=%%a
@@ -136,32 +157,50 @@ if errorlevel 1 (
     exit /b 1
 )
 
-:: Step 5: Push to GitHub
+:: Step 6: Push to GitHub
 echo.
-echo [5/6] Pushing to GitHub...
+echo [6/7] Pushing to GitHub...
 echo.
 git push origin main
 
-:: Check if push was successful by looking at output
-:: We need to capture the output and check for success
->nul 2>&1 git push origin main && (
-    echo ✓ Push successful!
-    goto :push_success
-) || (
+if errorlevel 1 (
     echo.
-    echo ERROR: Push failed!
-    echo Possible reasons:
-    echo - No internet connection
-    echo - Need to pull changes first (run git pull)
-    echo - GitHub authentication required
+    echo ERROR: Push rejected!
     echo.
-    echo Try: git pull origin main --rebase
-    echo Then run this script again.
-    pause
-    exit /b 1
+    echo This usually means GitHub Actions updated files remotely.
+    echo Trying to pull and merge changes...
+    echo.
+    
+    :: Try to pull and rebase
+    git pull origin main --rebase
+    
+    if errorlevel 1 (
+        echo.
+        echo ERROR: Could not auto-merge!
+        echo Please resolve conflicts manually:
+        echo 1. Check which files have conflicts
+        echo 2. Edit files to resolve conflicts
+        echo 3. Run: git add .
+        echo 4. Run: git rebase --continue
+        echo 5. Run this script again
+        pause
+        exit /b 1
+    )
+    
+    :: Try pushing again after successful rebase
+    echo.
+    echo ✓ Merge successful! Pushing again...
+    git push origin main
+    
+    if errorlevel 1 (
+        echo.
+        echo ERROR: Push still failed after merge!
+        echo Please check your Git configuration and try manually.
+        pause
+        exit /b 1
+    )
 )
 
-:push_success
 :: Success!
 echo.
 echo ========================================
@@ -174,9 +213,9 @@ echo 2. New pack.zip will be generated
 echo 3. Check status: https://github.com/WaffleCross97/PG-RP/actions
 echo.
 
-:: Step 6: Wait and run update_repo.bat
+:: Step 7: Wait and run update_repo.bat
 echo.
-echo [6/6] Waiting for GitHub Actions to complete...
+echo [7/7] Waiting for GitHub Actions to complete...
 echo.
 echo IMPORTANT: GitHub Actions typically takes 1-2 minutes.
 echo Please wait while the pack is being built...
