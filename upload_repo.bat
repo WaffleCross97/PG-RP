@@ -175,13 +175,13 @@ echo.
 echo IMPORTANT: GitHub Actions typically takes 1-2 minutes.
 echo Please wait while the pack is being built...
 echo.
-set /p "=Waiting 90 seconds for build to complete... " < nul
-
-:: Wait 90 seconds for GitHub Actions
-timeout /t 90 /nobreak > nul
+echo Press any key AFTER GitHub Actions shows a green checkmark...
+echo (Check: https://github.com/WaffleCross97/PG-RP/actions)
+echo.
+pause
 
 echo.
-echo ✓ Time elapsed. Running update_repo.bat...
+echo Running update_repo.bat...
 echo.
 
 :: Run update_repo.bat if it exists
