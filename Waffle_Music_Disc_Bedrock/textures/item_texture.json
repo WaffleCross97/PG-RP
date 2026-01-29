@@ -2,35 +2,34 @@
   "resource_pack_name": "waffle_music_disc_Bedrock",
   "texture_name": "atlas.items",
   "texture_data": {
-    "coin": {
+    "modelbrowser.coin": {
       "textures": "textures/items/coin"
     },
-    "crown": {
+    "modelbrowser.crown": {
       "textures": "textures/items/crown"
     },
-    "lilypad_shield": {
+    "modelbrowser.lilypad_shield": {
       "textures": "textures/items/lilypad_shield"
     },
-    "police_hat": {
+    "modelbrowser.police_hat": {
       "textures": "textures/items/police_hat"
     },
-    "traptanium_axe": {
+    "modelbrowser.traptanium_axe": {
       "textures": "textures/items/traptanium_axe"
     },
-    "traptanium_pickaxe": {
+    "modelbrowser.traptanium_pickaxe": {
       "textures": "textures/items/traptanium_pickaxe"
     },
-    "traptanium_shield": {
+    "modelbrowser.traptanium_shield": {
       "textures": "textures/items/traptanium_shield"
     },
-    },
-    "traptanium_sword": {
+    "modelbrowser.traptanium_sword": {
       "textures": "textures/items/traptanium_sword"
     },
-    "waffle_shield": {
+    "modelbrowser.waffle_shield": {
       "textures": "textures/items/waffle_shield"
     },
-    "waffle_sword": {
+    "modelbrowser.waffle_sword": {
       "textures": "textures/items/waffle_sword"
     }
   }
