@@ -7,7 +7,7 @@ cd /d "C:\Users\tidus\OneDrive\Desktop\Minecraft rp\"
 :: Pull latest changes
 git pull origin main
 
-if errorlevel 1 (
+if error level 1 (
     echo ERROR: Could not update!
     echo Make sure you're connected to internet.
     pause

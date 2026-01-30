@@ -53,7 +53,7 @@ echo [1/7] Pulling latest changes from GitHub...
 echo.
 git pull origin main
 
-if errorlevel 1 (
+if error level 1 (
     echo WARNING: Pull failed or had conflicts!
     echo.
     echo If you see merge conflicts above:
@@ -125,7 +125,7 @@ goto choice_%CHOICE%
 :after_stage
 :: Check if anything was staged
 git diff --cached --quiet
-if errorlevel 1 (
+if error level 1 (
     echo ✓ Files staged successfully!
 ) else (
     echo No changes to upload!
@@ -150,7 +150,7 @@ set "COMMIT_MSG=Update: %YYYY%-%MM%-%DD% %TIME%"
 echo Commit message: %COMMIT_MSG%
 git commit -m "%COMMIT_MSG%"
 
-if errorlevel 1 (
+if error level 1 (
     echo ERROR: Commit failed!
     echo This usually means no changes were staged.
     pause
@@ -163,7 +163,7 @@ echo [6/7] Pushing to GitHub...
 echo.
 git push origin main
 
-if errorlevel 1 (
+if error level 1 (
     echo.
     echo ERROR: Push rejected!
     echo.
@@ -174,7 +174,7 @@ if errorlevel 1 (
     :: Try to pull and rebase
     git pull origin main --rebase
     
-    if errorlevel 1 (
+    if error level 1 (
         echo.
         echo ERROR: Could not auto-merge!
         echo Please resolve conflicts manually:
@@ -192,7 +192,7 @@ if errorlevel 1 (
     echo ✓ Merge successful! Pushing again...
     git push origin main
     
-    if errorlevel 1 (
+    if error level 1 (
         echo.
         echo ERROR: Push still failed after merge!
         echo Please check your Git configuration and try manually.

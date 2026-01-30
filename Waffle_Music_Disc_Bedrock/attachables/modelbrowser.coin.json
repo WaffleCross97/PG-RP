@@ -3,16 +3,16 @@
   "minecraft:attachable": {
     "description": {
       "geometry": {
-        "default": "geometry.coin" // Points to your geometry file
+        "default": "geometry.coin"
       },
-      "identifier": "modelbrowser.coin", // Must match mappings.json
+      "identifier": "modelbrowser.coin",
       "materials": {
         "default": "entity_alphatest",
         "enchanted": "entity_alphatest_glint"
       },
       "render_controllers": ["controller.render.item_default"],
       "textures": {
-        "default": "textures/items/coin", // Points to your texture
+        "default": "textures/items/coin",
         "enchanted": "textures/misc/enchanted_actor_glint"
       }
     }

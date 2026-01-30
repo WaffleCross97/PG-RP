@@ -29,9 +29,9 @@
             text-align: center;
             margin-bottom: 3rem;
             padding: 2rem;
-            background: rgba(255, 255, 255, 0.05);
+            background: RGBA(255, 255, 255, 0.05);
             border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid RGBA(255, 255, 255, 0.1);
         }
         
         .logo {
@@ -535,7 +535,7 @@
             jsonFileInput.files = createFileList(file);
             
             // Auto-fill item name from filename if empty
-            if (!itemNameInput.value && file.name) {
+            is (!itemNameInput.value && file.name) {
                 const nameWithoutExt = file.name.replace('.json', '').toLowerCase();
                 itemNameInput.value = nameWithoutExt;
                 

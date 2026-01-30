@@ -31,6 +31,9 @@
     },
     "modelbrowser.waffle_sword": {
       "textures": "textures/items/waffle_sword"
+    },
+    "modelbrowser.bow": {
+      "textures": "textures/items/bow"
     }
   }
 }
